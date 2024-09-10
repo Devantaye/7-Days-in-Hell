@@ -2,6 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ *   Developed by: Dev
+ *   
+ *   1) testplayer class: 
+ *    - Controls the movement of the player
+ *    - handles movement animations
+ */
 public class testplayer : MonoBehaviour
 {
     // Variables Declared
