@@ -663,7 +663,8 @@ PlayerSettings:
   metroDefaultTileSize: 1
   metroTileForegroundText: 2
   metroTileBackgroundColor: {r: 0.13333334, g: 0.17254902, b: 0.21568628, a: 0}
-  metroSplashScreenBackgroundColor: {r: 0.12941177, g: 0.17254902, b: 0.21568628, a: 1}
+  metroSplashScreenBackgroundColor: {r: 0.12941177, g: 0.17254902, b: 0.21568628,
+    a: 1}
   metroSplashScreenUseBackgroundColor: 0
   syncCapabilities: 0
   platformCapabilities: {}
@@ -724,7 +725,7 @@ PlayerSettings:
   cloudProjectId: 8bc80faa-39e7-4895-ae6d-6e3b47ad75f1
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 7 Days In Hell
+  projectName: 
   organizationId: devantayeee
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
