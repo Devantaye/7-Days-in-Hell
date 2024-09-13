@@ -41,12 +41,15 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Layer 1
-    uniqueID: 2425651459
+  - name: Background Map Layer
+    uniqueID: 2776039893
     locked: 0
-  - name: Layer 2
-    uniqueID: 4250941897
+  - name: Background Assets Layer
+    uniqueID: 3896629835
     locked: 0
-  - name: Layer 3
-    uniqueID: 4189426099
+  - name: Game objects Layer
+    uniqueID: 4015047515
+    locked: 0
+  - name: UI layer
+    uniqueID: 1922764225
     locked: 0
