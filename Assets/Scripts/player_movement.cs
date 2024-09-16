@@ -59,6 +59,11 @@ public class testplayer : MonoBehaviour
     void FixedUpdate()
     {
         // Tracks player movement
-        rb.MovePosition(rb.position + movement * moveSpeed * Time.deltaTime);
+        // rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+
+        /* Use velocity for smoother movement 
+         * by Alex
+        */
+        rb.velocity = movement.normalized * moveSpeed;
     }
 }
