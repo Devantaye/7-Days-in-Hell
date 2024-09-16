@@ -41,15 +41,21 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Background Map Layer
-    uniqueID: 2776039893
+  - name: Ground
+    uniqueID: 4218383599
     locked: 0
-  - name: Background Assets Layer
-    uniqueID: 3896629835
+  - name: WalkInFront
+    uniqueID: 1074455045
     locked: 0
-  - name: Game objects Layer
-    uniqueID: 4015047515
+  - name: Collision
+    uniqueID: 2548760185
     locked: 0
-  - name: UI layer
-    uniqueID: 1922764225
+  - name: Player
+    uniqueID: 1684369367
+    locked: 0
+  - name: WalkBehind
+    uniqueID: 2605765481
+    locked: 0
+  - name: Decor
+    uniqueID: 2150911117
     locked: 0
