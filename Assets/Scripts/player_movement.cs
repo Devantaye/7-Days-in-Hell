@@ -37,7 +37,7 @@ public class testplayer : MonoBehaviour
         animator.SetFloat("Speed", movement.sqrMagnitude);
 
         //Existing code from the video
-        spriteRenderer.flipX = movement.x < 0.01 ? true : false;    
+        spriteRenderer.flipX = movement.x < 0.01f ? true : false;    
 
     }
 
@@ -45,6 +45,11 @@ public class testplayer : MonoBehaviour
     void FixedUpdate()
     {
         // Tracks player movement
-        rb.MovePosition(rb.position + movement * moveSpeed * Time.deltaTime);
+        // rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+
+        /* Use velocity for smoother movement 
+         * by Alex
+        */
+        rb.velocity = movement.normalized * moveSpeed;
     }
 }
