@@ -8,6 +8,7 @@ public class MapTransition : MonoBehaviour
     [SerializeField] PolygonCollider2D mapBoundary;
     CinemachineConfiner confiner;
     [SerializeField] Direction direction;
+    [SerializeField] float additivePos = 2;
     enum Direction { Up, Down, Left, Right }
 
     private void Awake()
@@ -31,16 +32,16 @@ public class MapTransition : MonoBehaviour
         switch (direction)
         {
             case Direction.Up:
-                newPos.y += 15;
+                newPos.y += additivePos;
                 break;
             case Direction.Down:
-                newPos.y -= 15;
+                newPos.y -= additivePos;
                 break;
             case Direction.Left:
-                newPos.x += 15;
+                newPos.x += additivePos;
                 break;
             case Direction.Right:
-                newPos.x -= 15;
+                newPos.x -= additivePos;
                 break;
         }
 
