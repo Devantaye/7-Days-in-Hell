@@ -10,7 +10,7 @@ public class testplayer : MonoBehaviour
     public Animator animator;         // Reference to animator
     public SpriteRenderer spriteRenderer;    // Sprite renderer to mirror right_walk animation
     Vector2 movement;
-    private Vector2 lastMovement;
+    public Vector2 lastMovement;
 
     // Start Fucntion
     void Start()
