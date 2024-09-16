@@ -1189,6 +1189,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d862dd04a2706d4cb4b15657b918a51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animator: {fileID: 1661411945}
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  playerAttackCooldown: 0.6
+  attackDamage: 1
+  attackRange: 0.3
 --- !u!95 &1661411945
 Animator:
   serializedVersion: 5
@@ -1253,6 +1260,7 @@ MonoBehaviour:
   rb: {fileID: 1661411946}
   animator: {fileID: 1661411945}
   spriteRenderer: {fileID: 0}
+  lastMovement: {x: 0, y: 0}
 --- !u!212 &1661411948
 SpriteRenderer:
   m_ObjectHideFlags: 0

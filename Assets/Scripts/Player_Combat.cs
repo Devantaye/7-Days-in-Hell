@@ -10,10 +10,10 @@ public class Player_Combat : MonoBehaviour
     private testplayer playerMovement;        // Reference to player_movement script
 
     // Variables for attack stuff
-    public float playerAttackCooldown = 1.0f; // Time in seconds between attacks
+    public float playerAttackCooldown = 0.6f; // Time in seconds between attacks
     private float lastAttackTime = 0f;        // Time when the last attack occurred
     public int attackDamage = 1;              // Damage dealt by the attack
-    public float attackRange = 3f;            // Range of attack
+    public float attackRange = 0.3f;            // Range of attack
 
     void Start()
     {
