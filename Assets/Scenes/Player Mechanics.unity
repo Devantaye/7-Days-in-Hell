@@ -53590,11 +53590,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 978058989}
-  attackRange: 1
   enemyLayers:
     serializedVersion: 2
     m_Bits: 0
   playerAttackCooldown: 0.6
+  attackDamage: 1
+  attackRange: 0.3
 --- !u!95 &978058989
 Animator:
   serializedVersion: 5
@@ -53724,8 +53725,7 @@ Transform:
   m_LocalPosition: {x: 0.026, y: -0.052, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1211066160}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!213 &981933753
@@ -57104,11 +57104,11 @@ Transform:
   m_GameObject: {fileID: 1211066159}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.026, y: 0.052, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 978058993}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1211066161
 MonoBehaviour:
@@ -57173,7 +57173,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 0.6
+  orthographic size: 4
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -103618,5 +103618,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1283431731}
+  - {fileID: 1211066160}
   - {fileID: 978058993}
   - {fileID: 1656324063}
