@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class testplayer : MonoBehaviour
+public class PlayerControls : MonoBehaviour
 {
     // Variables Declared
-    public float moveSpeed = 5f;      // Adjustable movement speed
-    public Rigidbody2D rb;            // Rigid body
-    public Animator animator;         // Reference to animator
-    public SpriteRenderer spriteRenderer;    // Sprite renderer to mirror right_walk animation
+    public float moveSpeed = 5f;            // Adjustable movement speed
+    public Rigidbody2D rb;                  // Rigid body
+    public Animator animator;               // Reference to animator
+    public SpriteRenderer spriteRenderer;   // Sprite renderer to mirror right_walk animation
     Vector2 movement;
     public Vector2 lastMovement;
 
