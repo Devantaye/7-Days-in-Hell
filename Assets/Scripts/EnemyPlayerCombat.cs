@@ -73,10 +73,10 @@ public class EnemyPlayerCombat : MonoBehaviour
             if (IsWithinCone(direction, toEnemy))
             {
                 // Deal damage
-                EnemyHealth enemyHealth = enemy.GetComponent<EnemyHealth>();
-                if (enemyHealth != null)
+                MonsterHealth MonsterHealth = enemy.GetComponent<MonsterHealth>();
+                if (MonsterHealth != null)
                 {
-                    enemyHealth.TakeDamage(attackDamage);
+                    MonsterHealth.TakeDamage(attackDamage);
                 }
                 Debug.Log($"Hit {enemy.name} with {attackDamage} damage within cone attack area");
             }

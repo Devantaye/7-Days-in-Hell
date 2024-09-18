@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerControls : MonoBehaviour
 {
+    public static PlayerControls Instance;
+
     // Variables Declared
     public float moveSpeed = 5f;            // Adjustable movement speed
     public Rigidbody2D rb;                  // Rigid body
@@ -20,6 +22,11 @@ public class PlayerControls : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         lastMovement = Vector2.down; // Default idle animation
         heartEmote.SetActive(false); // Starts with emote hidden
+    }
+
+    private void Awake()
+    {
+        Instance = this;
     }
 
     // Update every frame
