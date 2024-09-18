@@ -9,14 +9,17 @@ public class PlayerControls : MonoBehaviour
     public Rigidbody2D rb;                  // Rigid body
     public Animator animator;               // Reference to animator
     public SpriteRenderer spriteRenderer;   // Sprite renderer to mirror right_walk animation
-    Vector2 movement;
-    public Vector2 lastMovement;
+    Vector2 movement;                       // For walking animations
+    public Vector2 lastMovement;            // For attack/idle animation directions
+    public GameObject heartEmote;           // Reference to heart emote
+    public float emoteDuration = 1.5f;      // Controls emote length
 
     // Start Fucntion
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        lastMovement = Vector2.down; //Default idle animation
+        lastMovement = Vector2.down; // Default idle animation
+        heartEmote.SetActive(false); // Starts with emote hidden
     }
 
     // Update every frame
@@ -53,6 +56,16 @@ public class PlayerControls : MonoBehaviour
         {
             spriteRenderer.flipX = false; // Facing right
         }
+
+        //Emote code
+        if (movement == Vector2.zero && Input.GetKeyDown(KeyCode.B))
+        {
+            //heart emote code
+            animator.SetTrigger("Heart"); // Add later for player emotes
+            heartEmote.SetActive(true);
+            Invoke("hideHeartEmote", emoteDuration);
+
+        }
     }
 
     // Fixed Update
@@ -65,5 +78,11 @@ public class PlayerControls : MonoBehaviour
          * by Alex
         */
         rb.velocity = movement.normalized * moveSpeed;
+    }
+
+    // Untoggles heart emote
+    void hideHeartEmote()
+    {
+        heartEmote.SetActive(false);
     }
 }
