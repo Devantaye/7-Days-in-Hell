@@ -2,13 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
- *   Developed by: Dev
- *   
- *   1) testplayer class: 
- *    - Controls the movement of the player
- *    - handles movement animations
- */
 public class testplayer : MonoBehaviour
 {
     // Variables Declared
@@ -17,11 +10,13 @@ public class testplayer : MonoBehaviour
     public Animator animator;         // Reference to animator
     public SpriteRenderer spriteRenderer;    // Sprite renderer to mirror right_walk animation
     Vector2 movement;
+    public Vector2 lastMovement;
 
     // Start Fucntion
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        lastMovement = Vector2.down; //Default idle animation
     }
 
     // Update every frame
@@ -36,15 +31,39 @@ public class testplayer : MonoBehaviour
         animator.SetFloat("Vertical", movement.y);
         animator.SetFloat("Speed", movement.sqrMagnitude);
 
-        //Existing code from the video
-        spriteRenderer.flipX = movement.x < 0.01 ? true : false;    
+        // Tracks the last movement direction to setup idle animations
+        if (movement != Vector2.zero)
+        {
+            lastMovement = movement;
+        }
 
+        // Set idle animation direction based on last movement
+        animator.SetFloat("LastHorizontal", lastMovement.x);
+        animator.SetFloat("LastVertical", lastMovement.y);
+
+        // Flipping animation when player is moving
+        spriteRenderer.flipX = movement.x < 0.01 ? true : false;
+
+        // Flipping animation when player is moving
+        if (lastMovement.x < 0)
+        {
+            spriteRenderer.flipX = true;  // Facing left
+        }
+        else if (lastMovement.x > 0)
+        {
+            spriteRenderer.flipX = false; // Facing right
+        }
     }
 
     // Fixed Update
     void FixedUpdate()
     {
         // Tracks player movement
-        rb.MovePosition(rb.position + movement * moveSpeed * Time.deltaTime);
+        // rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
+
+        /* Use velocity for smoother movement 
+         * by Alex
+        */
+        rb.velocity = movement.normalized * moveSpeed;
     }
 }
