@@ -2,23 +2,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player_Combat : MonoBehaviour
+public class PlayerCombat : MonoBehaviour
 {
     // Default variables
     public Animator animator;                 // Reference to animator for attack animations
     public LayerMask enemyLayers;             // Layer of enemies (for attack detection)
-    private testplayer playerMovement;        // Reference to player_movement script
+    public LayerMask enemyPlayerLayers;       // Layer of enemy players (for attack detection)
+    private PlayerControls playerMovement;    // Reference to player_movement script
 
     // Variables for attack stuff
     public float playerAttackCooldown = 0.6f; // Time in seconds between attacks
     private float lastAttackTime = 0f;        // Time when the last attack occurred
     public int attackDamage = 1;              // Damage dealt by the attack
-    public float attackRange = 0.3f;            // Range of attack
+    public float attackRange = 0.3f;          // Range of attack
 
     void Start()
     {
         // Get reference to the player's movement script
-        playerMovement = GetComponent<testplayer>();
+        playerMovement = GetComponent<PlayerControls>();
         lastAttackTime = -playerAttackCooldown;
     }
 
@@ -49,7 +50,8 @@ public class Player_Combat : MonoBehaviour
         animator.SetFloat("LastVertical", playerMovement.lastMovement.y);
 
         // Detect enemies + deal damage
-        DetectEnemiesInCone();
+        DetectEnemiesInCone(); // Monsters
+        DetectPlayersInCone(); // Players
     }
 
     // Code to detect enemies + deal damage
@@ -74,6 +76,33 @@ public class Player_Combat : MonoBehaviour
                     enemyHealth.TakeDamage(attackDamage);
                 }
                 Debug.Log($"Hit {enemy.name} with {attackDamage} damage within cone attack area");
+            }
+        }
+
+    }
+
+    // Code to detect enemies + deal damage
+    void DetectPlayersInCone()
+    {
+        Vector2 attackDirection = playerMovement.lastMovement.normalized;
+
+        // Detect all players in area around own player (circle)
+        Collider2D[] enemyPlayers = Physics2D.OverlapCircleAll((Vector2)transform.position, attackRange, enemyPlayerLayers);
+
+        foreach (Collider2D enemyPlayer in enemyPlayers)
+        {
+            Vector2 toEnemyPlayer = (Vector2)enemyPlayer.transform.position - (Vector2)transform.position;
+
+            // Check if enemy is in the attack range (1 of 4 directions -> cone-shaped)
+            if (IsWithinCone(attackDirection, toEnemyPlayer))
+            {
+                // Deal damage
+                PlayerHealth playerHealth = enemyPlayer.GetComponent<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(attackDamage);
+                }
+                Debug.Log($"Hit {enemyPlayer.name} with {attackDamage} damage within cone attack area");
             }
         }
 
