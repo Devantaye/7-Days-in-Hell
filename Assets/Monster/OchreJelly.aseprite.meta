@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: de9e304d4d39341bfba54c941c9e1efe
+guid: fab1a1d67413149dbb468155b59ac9cc
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -132,7 +132,7 @@ ScriptedImporter:
       y: 22
       width: 12
       height: 9
-    spriteID: 50d71d9786c32461e833f2dd95d170e6
+    spriteID: 331b5eeb65adc498192c504a78f31598
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -152,7 +152,7 @@ ScriptedImporter:
       y: 4
       width: 14
       height: 8
-    spriteID: 55cb56318793c4d3fa25bb0d430083ba
+    spriteID: 4afc26f67aca44cb9aafc6c0287d350e
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -172,7 +172,7 @@ ScriptedImporter:
       y: 4
       width: 12
       height: 10
-    spriteID: b779c6caaffad4c778d67602b4759777
+    spriteID: 9ef53d76a40ba47669dc029d634ea21c
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -192,7 +192,7 @@ ScriptedImporter:
       y: 4
       width: 12
       height: 10
-    spriteID: 3b5aeee44f9af4893ac56adf5f21798b
+    spriteID: 9ffb2d674e16249bda5be2a7671ef5bc
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -218,7 +218,7 @@ ScriptedImporter:
         y: 0
         width: 12
         height: 9
-      spriteId: 50d71d9786c32461e833f2dd95d170e6
+      spriteId: 331b5eeb65adc498192c504a78f31598
     - name: OchreJelly_Frame_1
       frameIndex: 1
       additiveSortOrder: 0
@@ -227,7 +227,7 @@ ScriptedImporter:
         y: 0
         width: 14
         height: 8
-      spriteId: 55cb56318793c4d3fa25bb0d430083ba
+      spriteId: 4afc26f67aca44cb9aafc6c0287d350e
     - name: OchreJelly_Frame_2
       frameIndex: 2
       additiveSortOrder: 0
@@ -236,7 +236,7 @@ ScriptedImporter:
         y: 0
         width: 12
         height: 10
-      spriteId: b779c6caaffad4c778d67602b4759777
+      spriteId: 9ef53d76a40ba47669dc029d634ea21c
     - name: OchreJelly_Frame_3
       frameIndex: 3
       additiveSortOrder: 0
@@ -245,7 +245,7 @@ ScriptedImporter:
         y: 2
         width: 12
         height: 10
-      spriteId: 3b5aeee44f9af4893ac56adf5f21798b
+      spriteId: 9ffb2d674e16249bda5be2a7671ef5bc
     linkedCells: []
     parentIndex: -1
   platformSettings: []
