@@ -12,8 +12,11 @@ public class MonsterHealth : MonoBehaviour
 
     private Knockback knockback;
 
+    private Flash flash;
+
     private void Awake()
     {
+        flash = GetComponent<Flash>();
         knockback = GetComponent<Knockback>();
     }
 
@@ -31,11 +34,11 @@ public class MonsterHealth : MonoBehaviour
     {
         updatedHealth -= damage; //Decrease the monster health by the damage that was taken
         knockback.GetKnockedBack(PlayerControls.Instance.transform, 15f);
-        DetectDeath(); //Check if enemy should be 'deleted' after death
+        StartCoroutine(flash.FlashRoutine());
     }
 
     //Checks to see if enemies health is less than or equal to 0
-    private void DetectDeath()
+    public void DetectDeath()
     {
         if (updatedHealth <= 0)
         {

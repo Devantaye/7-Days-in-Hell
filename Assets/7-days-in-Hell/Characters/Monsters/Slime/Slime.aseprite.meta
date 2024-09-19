@@ -121,7 +121,7 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: OchreJelly_Frame_0
+  - name: Slime_Frame_0
     originalName: 
     pivot: {x: 0.5, y: 0}
     alignment: 9
@@ -132,7 +132,7 @@ ScriptedImporter:
       y: 22
       width: 12
       height: 9
-    spriteID: 4a7a0b121b866404aaa2029fa3804674
+    spriteID: 816f2638318924bfcb791cf066b96111
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -141,7 +141,7 @@ ScriptedImporter:
     edges: []
     tessellationDetail: 0
     uvTransform: {x: 4, y: 22}
-  - name: OchreJelly_Frame_1
+  - name: Slime_Frame_1
     originalName: 
     pivot: {x: 0.5, y: 0}
     alignment: 9
@@ -152,7 +152,7 @@ ScriptedImporter:
       y: 4
       width: 14
       height: 8
-    spriteID: 307c2e9a7ba9f49c4a8baed644979dca
+    spriteID: e3b8666d34d02468d96b6efbefbea8ca
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -161,7 +161,7 @@ ScriptedImporter:
     edges: []
     tessellationDetail: 0
     uvTransform: {x: 44, y: 4}
-  - name: OchreJelly_Frame_2
+  - name: Slime_Frame_2
     originalName: 
     pivot: {x: 0.5, y: 0}
     alignment: 9
@@ -172,7 +172,7 @@ ScriptedImporter:
       y: 4
       width: 12
       height: 10
-    spriteID: ea9877c82b4cb407ea870cd56ce9b40e
+    spriteID: 5adfaac4e444d40ddba248534beea18c
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -181,7 +181,7 @@ ScriptedImporter:
     edges: []
     tessellationDetail: 0
     uvTransform: {x: 4, y: 4}
-  - name: OchreJelly_Frame_3
+  - name: Slime_Frame_3
     originalName: 
     pivot: {x: 0.5, y: -0.2}
     alignment: 9
@@ -192,7 +192,7 @@ ScriptedImporter:
       y: 4
       width: 12
       height: 10
-    spriteID: f8edf6edce61a4ffe905b711ab59d4a7
+    spriteID: 1f8c8801d7af5425db3bd11b70c1da4d
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -204,13 +204,13 @@ ScriptedImporter:
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
-    guid: 2031141569
-    name: OchreJelly
+    guid: -1324298474
+    name: Slime
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: OchreJelly_Frame_0
+    - name: Slime_Frame_0
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
@@ -218,8 +218,8 @@ ScriptedImporter:
         y: 0
         width: 12
         height: 9
-      spriteId: 4a7a0b121b866404aaa2029fa3804674
-    - name: OchreJelly_Frame_1
+      spriteId: 816f2638318924bfcb791cf066b96111
+    - name: Slime_Frame_1
       frameIndex: 1
       additiveSortOrder: 0
       cellRect:
@@ -227,8 +227,8 @@ ScriptedImporter:
         y: 0
         width: 14
         height: 8
-      spriteId: 307c2e9a7ba9f49c4a8baed644979dca
-    - name: OchreJelly_Frame_2
+      spriteId: e3b8666d34d02468d96b6efbefbea8ca
+    - name: Slime_Frame_2
       frameIndex: 2
       additiveSortOrder: 0
       cellRect:
@@ -236,8 +236,8 @@ ScriptedImporter:
         y: 0
         width: 12
         height: 10
-      spriteId: ea9877c82b4cb407ea870cd56ce9b40e
-    - name: OchreJelly_Frame_3
+      spriteId: 5adfaac4e444d40ddba248534beea18c
+    - name: Slime_Frame_3
       frameIndex: 3
       additiveSortOrder: 0
       cellRect:
@@ -245,7 +245,7 @@ ScriptedImporter:
         y: 2
         width: 12
         height: 10
-      spriteId: f8edf6edce61a4ffe905b711ab59d4a7
+      spriteId: 1f8c8801d7af5425db3bd11b70c1da4d
     linkedCells: []
     parentIndex: -1
   platformSettings: []
