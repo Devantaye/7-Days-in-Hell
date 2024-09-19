@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerControls : MonoBehaviour
+public class PlayerControls : NetworkBehaviour
 {
     // Variables Declared
     public float moveSpeed = 5f;            // Adjustable movement speed
@@ -22,6 +23,7 @@ public class PlayerControls : MonoBehaviour
     // Update every frame
     void Update()
     {
+        if (!IsOwner) return;
         // Controls player movement
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");

@@ -168,7 +168,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -279919781
-  m_SortingLayer: 3
+  m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -138394696, guid: 8c48d7c89aa4cdf4d81e8ea23ae1f98b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -197,6 +197,7 @@ MonoBehaviour:
   rb: {fileID: 6139676949809002907}
   animator: {fileID: 3348389247932553402}
   spriteRenderer: {fileID: 0}
+  lastMovement: {x: 0, y: 0}
 --- !u!50 &6139676949809002907
 Rigidbody2D:
   serializedVersion: 4
@@ -257,3 +258,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d862dd04a2706d4cb4b15657b918a51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  playerAttackCooldown: 0.6
+  attackDamage: 1
+  attackRange: 0.3

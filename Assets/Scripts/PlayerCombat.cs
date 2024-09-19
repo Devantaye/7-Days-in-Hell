@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerCombat : MonoBehaviour
+public class PlayerCombat : NetworkBehaviour
 {
     // Default variables
     public Animator animator;                 // Reference to animator for attack animations
@@ -25,6 +26,7 @@ public class PlayerCombat : MonoBehaviour
 
     void Update()
     {
+        if (!IsOwner) return;
         // Attack key = Space
         if (Input.GetKeyDown(KeyCode.Space))
         {
