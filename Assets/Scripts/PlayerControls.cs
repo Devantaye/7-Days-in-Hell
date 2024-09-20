@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class PlayerControls : NetworkBehaviour
 {
+    public static PlayerControls Instance;
+
     // Variables Declared
     public float moveSpeed = 5f;            // Adjustable movement speed
     public Rigidbody2D rb;                  // Rigid body
@@ -14,6 +16,7 @@ public class PlayerControls : NetworkBehaviour
     public Vector2 lastMovement;            // For attack/idle animation directions
     public GameObject heartEmote;           // Reference to heart emote
     public float emoteDuration = 1.5f;      // Controls emote length
+    private Knockback knockback;
 
     // Start Fucntion
     void Start()
@@ -21,6 +24,18 @@ public class PlayerControls : NetworkBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         lastMovement = Vector2.down; // Default idle animation
         heartEmote.SetActive(false); // Starts with emote hidden
+    }
+
+    private void Awake()
+    {
+        Instance = this;
+        knockback = GetComponent<Knockback>();
+    }
+
+    private void Move()
+    {
+        if (knockback.gettingPushedBack) { return; }
+
     }
 
     // Update every frame
