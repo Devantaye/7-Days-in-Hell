@@ -11,7 +11,19 @@ public class PlayerHealth : MonoBehaviour
     public GameObject playerModel;
     public Animator animator;
     private int currentHealth;
+    private bool takeDamageIndicator = true;
+    private Knockback knockback;
+    private Flash flash;
+    private float knockBackThrustAmount = 1f;
+    private float damageRecoveryTime = 3f;
     private float deathAnimationDuration = 0.73f;
+
+
+    private void Awake()
+    {
+        flash = GetComponent<Flash>();
+        knockback = GetComponent<Knockback>();
+    }
 
     void Start()
     {
@@ -23,10 +35,24 @@ public class PlayerHealth : MonoBehaviour
         
     }
 
+    private void OnCollisionStay2D(Collision2D other)
+    {
+        MonsterAI enemy = other.gameObject.GetComponent<MonsterAI>();
+
+        if (enemy && takeDamageIndicator)
+        {
+            TakeDamage(1);
+            knockback.GetKnockedBack(other.gameObject.transform, knockBackThrustAmount);
+            StartCoroutine(flash.FlashRoutine());
+        }
+    }
+
     // Damage checker
     public void TakeDamage(int damageAmount)
     {
+        takeDamageIndicator = false;
         currentHealth -= damageAmount;
+        StartCoroutine(DamageRecoveryRoutine());
         UpdateHearts(); // UI hearts animation
 
         // Check if player dies
@@ -35,7 +61,13 @@ public class PlayerHealth : MonoBehaviour
             Die();
         }
 
-        Debug.Log("Player took damage! Current health: " + currentHealth);
+    }
+
+
+    private IEnumerator DamageRecoveryRoutine()
+    {
+        yield return new WaitForSeconds(damageRecoveryTime);
+        takeDamageIndicator = true;
     }
 
 

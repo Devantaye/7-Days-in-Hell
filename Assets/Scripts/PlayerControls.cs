@@ -15,6 +15,7 @@ public class PlayerControls : MonoBehaviour
     public Vector2 lastMovement;            // For attack/idle animation directions
     public GameObject heartEmote;           // Reference to heart emote
     public float emoteDuration = 1.5f;      // Controls emote length
+    private Knockback knockback;
 
     // Start Fucntion
     void Start()
@@ -27,6 +28,13 @@ public class PlayerControls : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        knockback = GetComponent<Knockback>();
+    }
+
+    private void Move()
+    {
+        if (knockback.gettingPushedBack) { return; }
+
     }
 
     // Update every frame
