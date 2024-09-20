@@ -20,7 +20,6 @@ public class PlayerHealth : MonoBehaviour
             emptyHearts[i].SetActive(false); // Hides empty hearts
         }
         
-        
     }
 
     // Damage checker
@@ -45,6 +44,10 @@ public class PlayerHealth : MonoBehaviour
         // Play death animation
         animator.SetTrigger("Death");
 
+        // Disable player movement
+        GetComponent<PlayerControls>().enabled = false;
+        GetComponent<EnemyPlayerAI>().enabled = false; // For walking enemy player script
+
         // Destroy hearts
         for (int i = 0; i < hearts.Length; i++)
         {
@@ -54,6 +57,8 @@ public class PlayerHealth : MonoBehaviour
 
         // Death animation before player dies (object destroyed)
         StartCoroutine(WaitForDeathAnimation());
+
+
     }
 
     // Coroutine to wait for the death animation to complete
