@@ -29301,6 +29301,7 @@ MonoBehaviour:
   - {fileID: 1064380243}
   playerModel: {fileID: 691612871}
   animator: {fileID: 691612872}
+  enemyNum: 2
 --- !u!61 &691612874
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -29730,6 +29731,7 @@ MonoBehaviour:
   - {fileID: 1469592117}
   playerModel: {fileID: 836935343}
   animator: {fileID: 836935344}
+  enemyNum: 1
 --- !u!61 &836935348
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -31311,6 +31313,7 @@ MonoBehaviour:
   - {fileID: 973596932}
   playerModel: {fileID: 1601820000}
   animator: {fileID: 1601820004}
+  enemyNum: 0
 --- !u!1 &1666888205
 GameObject:
   m_ObjectHideFlags: 0

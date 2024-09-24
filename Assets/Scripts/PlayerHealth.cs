@@ -12,6 +12,7 @@ public class PlayerHealth : MonoBehaviour
     public Animator animator;
     private int currentHealth;
     private float deathAnimationDuration = 0.73f;
+    public int enemyNum;
 
     void Start()
     {
@@ -45,8 +46,14 @@ public class PlayerHealth : MonoBehaviour
         animator.SetTrigger("Death");
 
         // Disable player movement
-        GetComponent<PlayerControls>().enabled = false;
-        GetComponent<EnemyPlayerAI>().enabled = false; // For walking enemy player script
+        if (enemyNum == 0)
+        {
+            GetComponent<PlayerControls>().enabled = false;
+        }
+        else if (enemyNum == 1)
+        {
+            GetComponent<EnemyPlayerAI>().enabled = false; // For walking enemy player script
+        }
 
         // Destroy hearts
         for (int i = 0; i < hearts.Length; i++)
