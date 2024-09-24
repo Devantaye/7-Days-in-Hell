@@ -4,15 +4,17 @@ using UnityEngine;
 
 public class Shoot : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField] private GameObject projectilePrefab;
+
+    public void Attack()
     {
-        
+        Vector2 targetDirection = PlayerController.Instance.transform.position - transform.position;
+
+        GameObject newProjectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+        newProjectile.transform.right = targetDirection;
+
+
+
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
