@@ -26,7 +26,7 @@ public class PlayerCombat : NetworkBehaviour
 
     void Update()
     {
-        if (!IsOwner) return;
+        if (!IsOwner) return; // Only the owner can attack
         // Attack key = Space
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -39,28 +39,52 @@ public class PlayerCombat : NetworkBehaviour
     {
         if (Time.time - lastAttackTime >= playerAttackCooldown)
         {
-            Attack();
-            lastAttackTime = Time.time; 
+            // Trigger attack on the server
+            RequestAttackServerRpc(playerMovement.lastMovement); // Pass last movement direction
         }
     }
 
-    void Attack()
+    // Server RPC to handle attack on the server side
+    [ServerRpc]
+    void RequestAttackServerRpc(Vector2 attackDirection)
     {
-        // Play attack animation
-        animator.SetTrigger("Attack");
-        animator.SetFloat("LastHorizontal", playerMovement.lastMovement.x);
-        animator.SetFloat("LastVertical", playerMovement.lastMovement.y);
+        Attack(attackDirection); // Perform attack on the server with the direction
+        lastAttackTime = Time.time; // Update last attack time on the server
+        // Notify clients to play attack animation with direction
+        NotifyAttackClientRpc(attackDirection);
+    }
 
+    // Notify clients to play attack animation with direction
+    [ClientRpc]
+    void NotifyAttackClientRpc(Vector2 attackDirection)
+    {
+        // For the owner, play the attack animation directly
+        if (IsOwner)
+        {
+            animator.SetFloat("LastHorizontal", attackDirection.x);
+            animator.SetFloat("LastVertical", attackDirection.y);
+            animator.SetTrigger("Attack"); // Play attack animation for the owner
+        }
+        else
+        {
+            // For other clients
+            animator.SetFloat("LastHorizontal", attackDirection.x);
+            animator.SetFloat("LastVertical", attackDirection.y);
+            animator.SetTrigger("Attack"); // Play attack animation on all clients
+        }
+
+    }
+
+    void Attack(Vector2 attackDirection)
+    {
         // Detect enemies + deal damage
-        DetectEnemiesInCone(); // Monsters
-        DetectPlayersInCone(); // Players
+        DetectEnemiesInCone(attackDirection); // Monsters
+        DetectPlayersInCone(attackDirection); // Players
     }
 
     // Code to detect enemies + deal damage
-    void DetectEnemiesInCone()
+    void DetectEnemiesInCone(Vector2 attackDirection)
     {
-        Vector2 attackDirection = playerMovement.lastMovement.normalized;
-
         // Detect all enemies in area around player (circle)
         Collider2D[] enemies = Physics2D.OverlapCircleAll((Vector2)transform.position, attackRange, enemyLayers);
 
@@ -72,22 +96,19 @@ public class PlayerCombat : NetworkBehaviour
             if (IsWithinCone(attackDirection, toEnemy))
             {
                 // Deal damage
-                MonsterHealth MonsterHealth = enemy.GetComponent<MonsterHealth>();
-                if (MonsterHealth != null)
+                MonsterHealth monsterHealth = enemy.GetComponent<MonsterHealth>();
+                if (monsterHealth != null)
                 {
-                    MonsterHealth.TakeDamage(attackDamage);
+                    monsterHealth.TakeDamage(attackDamage);
                 }
                 Debug.Log($"Hit {enemy.name} with {attackDamage} damage within cone attack area");
             }
         }
-
     }
 
-    // Code to detect enemies + deal damage
-    void DetectPlayersInCone()
+    // Code to detect enemy players + deal damage
+    void DetectPlayersInCone(Vector2 attackDirection)
     {
-        Vector2 attackDirection = playerMovement.lastMovement.normalized;
-
         // Detect all players in area around own player (circle)
         Collider2D[] enemyPlayers = Physics2D.OverlapCircleAll((Vector2)transform.position, attackRange, enemyPlayerLayers);
 
@@ -107,7 +128,6 @@ public class PlayerCombat : NetworkBehaviour
                 Debug.Log($"Hit {enemyPlayer.name} with {attackDamage} damage within cone attack area");
             }
         }
-
     }
 
     // Cone check for attack directions
@@ -124,8 +144,10 @@ public class PlayerCombat : NetworkBehaviour
 
         return false;
     }
-
 }
+
+
+
 
 
 
