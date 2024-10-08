@@ -1,5 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -12,7 +12,7 @@ public class PlayerCombat : NetworkBehaviour
     private PlayerControls playerMovement;    // Reference to player_movement script
 
     // Variables for attack stuff
-    public float playerAttackCooldown = 0.6f; // Time in seconds between attacks
+    public float playerAttackCooldown = 4f;   // Time in seconds between attacks
     private float lastAttackTime = 0f;        // Time when the last attack occurred
     public int attackDamage = 1;              // Damage dealt by the attack
     public float attackRange = 0.3f;          // Range of attack
@@ -21,15 +21,18 @@ public class PlayerCombat : NetworkBehaviour
     {
         // Get reference to the player's movement script
         playerMovement = GetComponent<PlayerControls>();
-        lastAttackTime = -playerAttackCooldown;
+        lastAttackTime = -playerAttackCooldown; // Initialize last attack time
+        Debug.Log("PlayerCombat initialized. Last attack time set to: " + lastAttackTime);
     }
 
     void Update()
     {
         if (!IsOwner) return; // Only the owner can attack
+
         // Attack key = Space
         if (Input.GetKeyDown(KeyCode.Space))
         {
+            Debug.Log("Attack initiated by player.");
             TryAttack();
         }
     }
@@ -39,8 +42,24 @@ public class PlayerCombat : NetworkBehaviour
     {
         if (Time.time - lastAttackTime >= playerAttackCooldown)
         {
-            // Trigger attack on the server
-            RequestAttackServerRpc(playerMovement.lastMovement); // Pass last movement direction
+            Debug.Log("Attack successful. Cooldown passed.");
+            // Host also needs to execute this code for itself
+            if (IsHost)
+            {
+                Attack(playerMovement.lastMovement); // Perform attack locally
+                lastAttackTime = Time.time; // Update last attack time
+                NotifyAttackClientRpc(playerMovement.lastMovement);
+                Debug.Log("Host shit ran");
+            }
+            else
+            {
+                // Trigger attack on the server
+                RequestAttackServerRpc(playerMovement.lastMovement); // Pass last movement direction
+            }
+        }
+        else
+        {
+            Debug.Log("Attack on cooldown. Time remaining: " + (playerAttackCooldown - (Time.time - lastAttackTime)));
         }
     }
 
@@ -48,9 +67,18 @@ public class PlayerCombat : NetworkBehaviour
     [ServerRpc]
     void RequestAttackServerRpc(Vector2 attackDirection)
     {
-        Attack(attackDirection); // Perform attack on the server with the direction
-        lastAttackTime = Time.time; // Update last attack time on the server
-        // Notify clients to play attack animation with direction
+        // Perform attack on the server
+        Debug.Log("Server processing attack request.");
+        Attack(attackDirection);
+
+        // If the server is also the host, ensure the host's own attack is processed
+        if (IsHost)
+        {
+            lastAttackTime = Time.time;  // Set the attack cooldown for the host
+            Debug.Log("Host attack processed. Last attack time updated to: " + lastAttackTime);
+        }
+
+        // Notify clients to play the attack animation
         NotifyAttackClientRpc(attackDirection);
     }
 
@@ -58,6 +86,7 @@ public class PlayerCombat : NetworkBehaviour
     [ClientRpc]
     void NotifyAttackClientRpc(Vector2 attackDirection)
     {
+        Debug.Log("Notifying clients of attack direction: " + attackDirection);
         // For the owner, play the attack animation directly
         if (IsOwner)
         {
@@ -72,11 +101,11 @@ public class PlayerCombat : NetworkBehaviour
             animator.SetFloat("LastVertical", attackDirection.y);
             animator.SetTrigger("Attack"); // Play attack animation on all clients
         }
-
     }
 
     void Attack(Vector2 attackDirection)
     {
+        Debug.Log("Executing attack with direction: " + attackDirection);
         // Detect enemies + deal damage
         DetectEnemiesInCone(attackDirection); // Monsters
         DetectPlayersInCone(attackDirection); // Players
@@ -85,6 +114,7 @@ public class PlayerCombat : NetworkBehaviour
     // Code to detect enemies + deal damage
     void DetectEnemiesInCone(Vector2 attackDirection)
     {
+        Debug.Log("Detecting enemies in attack cone.");
         // Detect all enemies in area around player (circle)
         Collider2D[] enemies = Physics2D.OverlapCircleAll((Vector2)transform.position, attackRange, enemyLayers);
 
@@ -100,8 +130,8 @@ public class PlayerCombat : NetworkBehaviour
                 if (monsterHealth != null)
                 {
                     monsterHealth.TakeDamage(attackDamage);
+                    Debug.Log($"Hit {enemy.name} with {attackDamage} damage within cone attack area");
                 }
-                Debug.Log($"Hit {enemy.name} with {attackDamage} damage within cone attack area");
             }
         }
     }
@@ -109,6 +139,7 @@ public class PlayerCombat : NetworkBehaviour
     // Code to detect enemy players + deal damage
     void DetectPlayersInCone(Vector2 attackDirection)
     {
+        Debug.Log("Detecting enemy players in attack cone.");
         // Detect all players in area around own player (circle)
         Collider2D[] enemyPlayers = Physics2D.OverlapCircleAll((Vector2)transform.position, attackRange, enemyPlayerLayers);
 
@@ -124,12 +155,13 @@ public class PlayerCombat : NetworkBehaviour
                 if (playerHealth != null)
                 {
                     playerHealth.TakeDamage(attackDamage);
+                    Debug.Log($"Hit {enemyPlayer.name} with {attackDamage} damage within cone attack area");
                 }
-                Debug.Log($"Hit {enemyPlayer.name} with {attackDamage} damage within cone attack area");
             }
         }
     }
 
+    
     // Cone check for attack directions
     bool IsWithinCone(Vector2 attackDirection, Vector2 toEnemy)
     {
@@ -145,6 +177,7 @@ public class PlayerCombat : NetworkBehaviour
         return false;
     }
 }
+
 
 
 

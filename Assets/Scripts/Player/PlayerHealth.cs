@@ -14,7 +14,7 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
     public Transform spawnPoint;                        // Respawn point for the player
     private int currentHealth;                           // Local current health variable
     private bool takeDamageIndicator = true;            // Indicates if the player can take damage
-    private bool isInvincible = true;                    // Indicates if the player is invincible
+    private bool isInvincible = false;                    // Indicates if the player is invincible
     private Knockback knockback;                         // Reference to knockback script
     private Flash flash;                                 // Reference to flash script
     private float knockBackThrustAmount = 1f;           // Thrust amount for knockback
@@ -34,19 +34,12 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
         // Set health + Display health above characters
         currentHealth = maxHealth;
         UpdateHearts(); // Initialize heart display
-
-        // Start invincibility coroutine
-        StartCoroutine(InvincibilityCoroutine());
-    }
-
-    private void OnCollisionStay2D(Collision2D other)
-    {
-        // Collision damage logic removed to prevent immediate damage on spawn
     }
 
     // Coroutine to handle invincibility after spawn
     private IEnumerator InvincibilityCoroutine()
     {
+        isInvincible = true;
         yield return new WaitForSeconds(1f); // 1 second of invincibility
         isInvincible = false; // Set to false after the period
     }
@@ -70,11 +63,22 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
     // Damage checker
     public void TakeDamage(int damageAmount)
     {
-        if (!IsOwner || isInvincible) return; // Only the owner can take damage and not if invincible
+        Debug.Log($"TakeDamage called: damageAmount = {damageAmount}, currentHealth = {currentHealth}, isInvincible = {isInvincible}");
+        Debug.Log($"IsOwner: {IsOwner}, Invincible: {isInvincible}");
+
+        if (isInvincible)
+        {
+            Debug.Log($"Player is invincible. Damage not applied.");
+            return; // Only the owner can take damage and not if invincible
+        }
+
+        takeDamageIndicator = false;
 
         // Reduce health and update
         networkHealth.Value -= damageAmount;
         currentHealth = networkHealth.Value; // Sync local health with network health
+
+        Debug.Log($"Current health after damage: {currentHealth}");
 
         UpdateHearts(); // Update UI hearts animation
         UpdateHealthForClientsServerRpc(); // Notify other clients of the health update
@@ -84,12 +88,14 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
         // Check if player dies
         if (networkHealth.Value <= 0)
         {
+            Debug.Log($"attempting to die...");
+
             Die();
         }
     }
 
     // Function to sync health with all clients
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     void UpdateHealthForClientsServerRpc() // Updated method name
     {
         UpdateHearts(); // Call on server to update health
@@ -103,6 +109,7 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
         networkHealth.Value = newHealth; // Set new health
         currentHealth = newHealth; // Sync local health variable
         UpdateHearts(); // Update health UI
+        Debug.Log($"Health updated on client: {newHealth}");
     }
 
     [ClientRpc]
@@ -110,6 +117,7 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
     {
         currentHealth = health; // Update local current health variable
         UpdateHearts(); // Update heart UI
+        Debug.Log($"Hearts updated on client: {health}");
     }
 
     private IEnumerator DamageRecoveryRoutine()
@@ -121,14 +129,10 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
     // When the player dies
     void Die()
     {
-        if (!IsOwner) return;
-        // Play death animation
-        animator.SetTrigger("Death");
+        this.animator.SetTrigger("Death");
 
-        // Notify other clients to play the death animation
         TriggerDeathAnimationClientRpc();
 
-        // Disable player movement
         GetComponent<PlayerControls>().enabled = false;
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null)
@@ -136,22 +140,51 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
             rb.velocity = Vector2.zero;
         }
 
-        // Destroy hearts
         for (int i = 0; i < hearts.Length; i++)
         {
             hearts[i].SetActive(false);
             emptyHearts[i].SetActive(false);
         }
 
-        // Death animation before player dies (object destroyed)
+        // Hide all hearts (both hearts and empty hearts)
+        HideAllHeartsClientRpc();
+
         StartCoroutine(WaitForDeathAnimation());
+    }
+
+    // New ClientRpc to hide the player model
+    [ClientRpc]
+    void HidePlayerModelClientRpc()
+    {
+        Renderer[] renderers = playerModel.GetComponentsInChildren<Renderer>();
+        foreach (var renderer in renderers)
+        {
+            renderer.enabled = false; // Disable the renderer to make the model invisible
+        }
+    }
+
+    // Hide all hearts (both hearts and empty hearts)
+    [ClientRpc]
+    void HideAllHeartsClientRpc()
+    {
+        // Hide all full hearts
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            hearts[i].SetActive(false);
+        }
+
+        // Hide all empty hearts
+        for (int i = 0; i < emptyHearts.Length; i++)
+        {
+            emptyHearts[i].SetActive(false);
+        }
     }
 
     // ClientRpc to trigger death animation on all clients
     [ClientRpc]
     private void TriggerDeathAnimationClientRpc()
     {
-        if (IsOwner) return; // Prevent the owner from calling this again
+        //if (IsOwner) return; // Prevent the owner from calling this again
 
         // Trigger the death animation for the player who died
         animator.SetTrigger("Death");
@@ -165,6 +198,7 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
 
         // Hide the player by disabling the renderer
         GetComponent<Renderer>().enabled = false;  // Make the player invisible
+        HidePlayerModelClientRpc();
         Debug.Log("Player Renderer set to invisible.");
 
         yield return new WaitForSeconds(respawnTimer); // Wait for respawn timer
@@ -178,22 +212,36 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
 
     void Respawn()
     {
-        // Set player position to respawn point
         transform.position = spawnPoint.position;
+        networkHealth.Value = maxHealth;
+        currentHealth = networkHealth.Value;
+        UpdateHearts();
 
-        // Reset player health + enable hearts
-        networkHealth.Value = maxHealth; // Reset network health
-        currentHealth = networkHealth.Value; // Sync local health
-        UpdateHearts(); // Update the UI to reflect the player's health
+        // Update hearts UI after respawn (this will show the correct hearts again)
+        UpdateHeartsClientRpc(networkHealth.Value);
 
-        // Enable player controls
-        PlayerControls playerControls = GetComponent<PlayerControls>();
-        playerControls.enabled = true; // Re-enable player controls
+        GetComponent<PlayerControls>().enabled = true;
 
-        // Reset idle animation
-        Vector2 lastMovement = Vector2.down; // Reset last movement direction
+        Vector2 lastMovement = Vector2.down;
         animator.SetFloat("LastHorizontal", lastMovement.x);
         animator.SetFloat("LastVertical", lastMovement.y);
+
+        // Call ClientRpc to show player model for all clients
+        ShowPlayerModelClientRpc();
+
+        // Start invincibility coroutine
+        StartCoroutine(InvincibilityCoroutine());
+    }
+
+    // New ClientRpc to show the player model
+    [ClientRpc]
+    void ShowPlayerModelClientRpc()
+    {
+        Renderer[] renderers = playerModel.GetComponentsInChildren<Renderer>();
+        foreach (var renderer in renderers)
+        {
+            renderer.enabled = true; // Enable the renderer to make the model visible again
+        }
     }
 
     // Update the heart icons based on the current health
@@ -225,12 +273,8 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
             }
         }
     }
-
-    void DeathAnimation()
-    {
-        // Handle death animation if needed
-    }
 }
+
 
 
 
