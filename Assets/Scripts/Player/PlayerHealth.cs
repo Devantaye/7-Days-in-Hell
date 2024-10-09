@@ -5,26 +5,36 @@ using UnityEngine;
 
 public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
 {
-    // Variables
-    public int maxHealth = 3;                          // Max health points
-    public GameObject[] hearts;                         // Array of heart GameObjects
-    public GameObject[] emptyHearts;                    // Array of empty heart GameObjects
-    public GameObject playerModel;                      // Reference to the player model
-    public Animator animator;                            // Reference to the animator
-    public Transform spawnPoint;                        // Respawn point for the player
-    private int currentHealth;                           // Local current health variable
-    private bool takeDamageIndicator = true;            // Indicates if the player can take damage
-    private bool isInvincible = false;                    // Indicates if the player is invincible
-    private Knockback knockback;                         // Reference to knockback script
-    private Flash flash;                                 // Reference to flash script
-    private float knockBackThrustAmount = 1f;           // Thrust amount for knockback
-    private float damageRecoveryTime = 3f;              // Time after taking damage before accepting more
-    private float deathAnimationDuration = 0.73f;       // Duration of the death animation
-    private float respawnTimer = 3f;                    // Duration of the respawn timer
-    private NetworkVariable<int> networkHealth = new NetworkVariable<int>(3); // Network variable for health
+    // Default Variables
+    public GameObject[] hearts;                       // Array of heart GameObjects
+    public GameObject[] emptyHearts;                  // Array of empty heart GameObjects
+    public GameObject playerModel;                    // Reference to the player model
+    public Animator animator;                         // Reference to the animator
+    public Transform spawnPoint;                      // Respawn point for the player
+
+    // Player health stuff
+    public static int maxHealth = 3;                  // Max health points
+    private int currentHealth;                        // Local current health variable
+    private bool takeDamageIndicator = true;          // Indicates if the player can take damage
+    private bool isInvincible = false;                // Indicates if the player is invincible
+    private Knockback knockback;                      // Reference to knockback script
+    private Flash flash;                              // Reference to flash script
+    private float knockBackThrustAmount = 1f;         // Thrust amount for knockback
+    private float damageRecoveryTime = 1f;            // Time after taking damage before accepting more
+    private float deathAnimationDuration = 0.73f;     // Duration of the death animation
+    private float respawnTimer = 3f;                  // Duration of the respawn timer
+    public float invincibilityTimer = 2f;             // Invincibility duration (for respawn)
+
+    // Network variables
+    private NetworkVariable<int> networkHealth = new NetworkVariable<int>(maxHealth); // Network variable for health
+
+    /*   ==========================================
+         LIFECYCLE METHODS - Start() , Update() etc
+         ==========================================   */
 
     private void Awake()
     {
+        // Gets references to components
         flash = GetComponent<Flash>();
         knockback = GetComponent<Knockback>();
     }
@@ -33,17 +43,152 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
     {
         // Set health + Display health above characters
         currentHealth = maxHealth;
-        UpdateHearts(); // Initialize heart display
+        UpdateHearts(); 
     }
 
-    // Coroutine to handle invincibility after spawn
+    /*   =========================================
+         HEALTH METHODS - Taking damage, death etc
+         =========================================   */
+
+    // Update the heart icons based on the current health
+    void UpdateHearts()
+    {
+        // Controls hearts (visible)
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            if (i < currentHealth)
+            {
+                hearts[i].SetActive(true);  
+            }
+            else
+            {
+                hearts[i].SetActive(false); 
+            }
+        }
+
+        // Controls empty hearts (visible when health is lost)
+        for (int i = 0; i < emptyHearts.Length; i++)
+        {
+            if (i >= currentHealth)
+            {
+                emptyHearts[i].SetActive(true);  
+            }
+            else
+            {
+                emptyHearts[i].SetActive(false); 
+            }
+        }
+    }
+
+    // Damage dealer - Player takes damage + checks death status
+    public void TakeDamage(int damageAmount)
+    {
+        if (isInvincible || takeDamageIndicator == false)
+        {
+            return; //  Player cant take damage due to respawning or damage invincibility
+        }
+
+        // Reduce health and update variables
+        takeDamageIndicator = false; // Cant take damage
+        networkHealth.Value -= damageAmount;
+        currentHealth = networkHealth.Value; // Sync local health with network health
+
+        // Update server stuff
+        UpdateHearts(); // Update UI hearts
+        UpdateHealthForClientsServerRpc(); // Notify other clients of the health update
+        StartCoroutine(DamageRecoveryRoutine()); // Prevent more damage
+
+        // Check if player dies
+        if (networkHealth.Value <= 0)
+        {
+            Die();
+        }
+    }
+
+    private IEnumerator DamageRecoveryRoutine()
+    {
+        yield return new WaitForSeconds(damageRecoveryTime);
+        takeDamageIndicator = true;
+    }
+
+    // Death function - Kills player + respawn functions
+    void Die()
+    {
+        // Trigger animator functions
+        this.animator.SetTrigger("Death");
+        TriggerDeathAnimationClientRpc();
+
+        // Disable necessary scripts (to prevent movement etc)
+        GetComponent<PlayerControls>().enabled = false;
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.velocity = Vector2.zero;
+        }
+
+        // Disable hearts ui
+        for (int i = 0; i < hearts.Length; i++)
+        {
+            hearts[i].SetActive(false);
+            emptyHearts[i].SetActive(false);
+        }
+
+        // Hide all hearts (Server sided) + start death animation
+        HideAllHeartsClientRpc();
+        StartCoroutine(WaitForDeathAnimation());
+    }
+
+    // Wait for death animation to complete + additional functions
+    IEnumerator WaitForDeathAnimation()
+    {
+        yield return new WaitForSeconds(deathAnimationDuration);
+
+        // Hide the player (simulate death)
+        GetComponent<Renderer>().enabled = false;  // Make the player invisible
+        HidePlayerModelClientRpc();
+
+        yield return new WaitForSeconds(respawnTimer); // Wait for respawn timer
+
+        // Respawn + show player when alive
+        Respawn();  
+        GetComponent<Renderer>().enabled = true;  
+    }
+
+    // Respawn method - 
+    void Respawn()
+    {
+        // Reset variables + enable components
+        transform.position = spawnPoint.position;
+        networkHealth.Value = maxHealth;
+        currentHealth = networkHealth.Value;
+        UpdateHearts();
+        GetComponent<PlayerControls>().enabled = true;
+
+        // Update hearts UI + set default parameters again
+        UpdateHeartsClientRpc(networkHealth.Value);
+        Vector2 lastMovement = Vector2.down;
+        animator.SetFloat("LastHorizontal", lastMovement.x);
+        animator.SetFloat("LastVertical", lastMovement.y);
+
+        // Call ClientRpc to show player model + activate invicibility
+        ShowPlayerModelClientRpc();
+        StartCoroutine(InvincibilityCoroutine());
+    }
+
+    // Invincibility function (cant die during respawn)
     private IEnumerator InvincibilityCoroutine()
     {
         isInvincible = true;
-        yield return new WaitForSeconds(1f); // 1 second of invincibility
-        isInvincible = false; // Set to false after the period
+        yield return new WaitForSeconds(invincibilityTimer); 
+        isInvincible = false; 
     }
 
+
+    /*   ===============================================
+         NETCODE METHODS - For animation/action syncing
+         ===============================================   */
+
+    // ServerRpc to trigger attacks (monsters)
     [ServerRpc]
     void AttackServerRpc(ulong enemyNetworkObjectId)
     {
@@ -60,110 +205,33 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
         }
     }
 
-    // Damage checker
-    public void TakeDamage(int damageAmount)
-    {
-        Debug.Log($"TakeDamage called: damageAmount = {damageAmount}, currentHealth = {currentHealth}, isInvincible = {isInvincible}");
-        Debug.Log($"IsOwner: {IsOwner}, Invincible: {isInvincible}");
-
-        if (isInvincible)
-        {
-            Debug.Log($"Player is invincible. Damage not applied.");
-            return; // Only the owner can take damage and not if invincible
-        }
-
-        takeDamageIndicator = false;
-
-        // Reduce health and update
-        networkHealth.Value -= damageAmount;
-        currentHealth = networkHealth.Value; // Sync local health with network health
-
-        Debug.Log($"Current health after damage: {currentHealth}");
-
-        UpdateHearts(); // Update UI hearts animation
-        UpdateHealthForClientsServerRpc(); // Notify other clients of the health update
-
-        StartCoroutine(DamageRecoveryRoutine());
-
-        // Check if player dies
-        if (networkHealth.Value <= 0)
-        {
-            Debug.Log($"attempting to die...");
-
-            Die();
-        }
-    }
-
-    // Function to sync health with all clients
+    // ServerRpc to sync health with all clients
     [ServerRpc(RequireOwnership = false)]
-    void UpdateHealthForClientsServerRpc() // Updated method name
+    void UpdateHealthForClientsServerRpc() 
     {
-        UpdateHearts(); // Call on server to update health
-        UpdateHealthClientRpc(networkHealth.Value); // Send updated health to all clients
-        UpdateHeartsClientRpc(networkHealth.Value); // Sync heart status to clients
+        UpdateHearts(); 
+        UpdateHealthClientRpc(networkHealth.Value); 
+        UpdateHeartsClientRpc(networkHealth.Value); 
     }
 
+    // ClientRpc to update health
     [ClientRpc]
     void UpdateHealthClientRpc(int newHealth)
     {
-        networkHealth.Value = newHealth; // Set new health
-        currentHealth = newHealth; // Sync local health variable
-        UpdateHearts(); // Update health UI
-        Debug.Log($"Health updated on client: {newHealth}");
+        networkHealth.Value = newHealth; 
+        currentHealth = newHealth; 
+        UpdateHearts(); 
     }
 
+    // ClientRpc to update hearts
     [ClientRpc]
     void UpdateHeartsClientRpc(int health)
     {
-        currentHealth = health; // Update local current health variable
-        UpdateHearts(); // Update heart UI
-        Debug.Log($"Hearts updated on client: {health}");
+        currentHealth = health; 
+        UpdateHearts(); 
     }
 
-    private IEnumerator DamageRecoveryRoutine()
-    {
-        yield return new WaitForSeconds(damageRecoveryTime);
-        takeDamageIndicator = true;
-    }
-
-    // When the player dies
-    void Die()
-    {
-        this.animator.SetTrigger("Death");
-
-        TriggerDeathAnimationClientRpc();
-
-        GetComponent<PlayerControls>().enabled = false;
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        if (rb != null)
-        {
-            rb.velocity = Vector2.zero;
-        }
-
-        for (int i = 0; i < hearts.Length; i++)
-        {
-            hearts[i].SetActive(false);
-            emptyHearts[i].SetActive(false);
-        }
-
-        // Hide all hearts (both hearts and empty hearts)
-        HideAllHeartsClientRpc();
-
-        StartCoroutine(WaitForDeathAnimation());
-    }
-
-    // New ClientRpc to hide the player model
-    [ClientRpc]
-    void HidePlayerModelClientRpc()
-    {
-        Renderer[] renderers = playerModel.GetComponentsInChildren<Renderer>();
-        foreach (var renderer in renderers)
-        {
-            renderer.enabled = false; // Disable the renderer to make the model invisible
-        }
-    }
-
-    // Hide all hearts (both hearts and empty hearts)
+    // ClientRpc to Hide hearts 
     [ClientRpc]
     void HideAllHeartsClientRpc()
     {
@@ -180,99 +248,36 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
         }
     }
 
-    // ClientRpc to trigger death animation on all clients
+    // ClientRpc to trigger death animation
     [ClientRpc]
     private void TriggerDeathAnimationClientRpc()
     {
-        //if (IsOwner) return; // Prevent the owner from calling this again
-
-        // Trigger the death animation for the player who died
         animator.SetTrigger("Death");
     }
 
-    // Coroutine to wait for the death animation to complete
-    IEnumerator WaitForDeathAnimation()
+    // ClientRpc to hide player model
+    [ClientRpc]
+    void HidePlayerModelClientRpc()
     {
-        Debug.Log("Waiting for death animation to complete...");
-        yield return new WaitForSeconds(deathAnimationDuration);
-
-        // Hide the player by disabling the renderer
-        GetComponent<Renderer>().enabled = false;  // Make the player invisible
-        HidePlayerModelClientRpc();
-        Debug.Log("Player Renderer set to invisible.");
-
-        yield return new WaitForSeconds(respawnTimer); // Wait for respawn timer
-        Debug.Log("Waiting period before respawn completed.");
-
-        Respawn();  // Call respawn function
-
-        GetComponent<Renderer>().enabled = true;  // Make the player visible
-        Debug.Log("Player Renderer set to visible. Player has respawned.");
+        Renderer[] renderers = playerModel.GetComponentsInChildren<Renderer>();
+        foreach (var renderer in renderers)
+        {
+            renderer.enabled = false; 
+        }
     }
 
-    void Respawn()
-    {
-        transform.position = spawnPoint.position;
-        networkHealth.Value = maxHealth;
-        currentHealth = networkHealth.Value;
-        UpdateHearts();
 
-        // Update hearts UI after respawn (this will show the correct hearts again)
-        UpdateHeartsClientRpc(networkHealth.Value);
-
-        GetComponent<PlayerControls>().enabled = true;
-
-        Vector2 lastMovement = Vector2.down;
-        animator.SetFloat("LastHorizontal", lastMovement.x);
-        animator.SetFloat("LastVertical", lastMovement.y);
-
-        // Call ClientRpc to show player model for all clients
-        ShowPlayerModelClientRpc();
-
-        // Start invincibility coroutine
-        StartCoroutine(InvincibilityCoroutine());
-    }
-
-    // New ClientRpc to show the player model
+    // ClientRpc to show player model
     [ClientRpc]
     void ShowPlayerModelClientRpc()
     {
         Renderer[] renderers = playerModel.GetComponentsInChildren<Renderer>();
         foreach (var renderer in renderers)
         {
-            renderer.enabled = true; // Enable the renderer to make the model visible again
+            renderer.enabled = true; 
         }
     }
 
-    // Update the heart icons based on the current health
-    void UpdateHearts()
-    {
-        // Controls hearts (visible)
-        for (int i = 0; i < hearts.Length; i++)
-        {
-            if (i < currentHealth)
-            {
-                hearts[i].SetActive(true);  // Show heart if health point exists
-            }
-            else
-            {
-                hearts[i].SetActive(false); // Hide heart if health point is lost
-            }
-        }
-
-        // Controls empty hearts (visible when health is lost)
-        for (int i = 0; i < emptyHearts.Length; i++)
-        {
-            if (i >= currentHealth)
-            {
-                emptyHearts[i].SetActive(true);  // Show empty heart if health point is lost
-            }
-            else
-            {
-                emptyHearts[i].SetActive(false); // Hide empty heart if health point exists
-            }
-        }
-    }
 }
 
 

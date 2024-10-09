@@ -5,20 +5,21 @@ using UnityEngine;
 
 public class PlayerControls : NetworkBehaviour
 {
-    public static PlayerControls Instance;
+    // Default variables
+    public Rigidbody2D rb;                     // Rigid body
+    public Animator animator;                  // Reference to animator
+    public SpriteRenderer spriteRenderer;      // Sprite renderer to mirror right_walk animation
+    public GameObject heartEmote;              // Reference to heart emote (only works interally atm)
 
-    // Variables Declared
-    public float moveSpeed = 5f;            // Adjustable movement speed
-    public Rigidbody2D rb;                  // Rigid body
-    public Animator animator;               // Reference to animator
-    public SpriteRenderer spriteRenderer;   // Sprite renderer to mirror right_walk animation
-    private Vector2 movement;                // For walking animations
-    public Vector2 lastMovement;            // For attack/idle animation directions
-    public GameObject heartEmote;           // Reference to heart emote
-    public float emoteDuration = 1.5f;      // Controls emote length
-    private Knockback knockback;
+    // Player control stuff
+    public float moveSpeed = 5f;               // Adjustable movement speed
+    private Vector2 movement;                  // For walking animations
+    public Vector2 lastMovement;               // For attack/idle animation directions
+    public float emoteDuration = 1.5f;         // Controls emote length
+    private Knockback knockback;               // For monster knockback
+    public static PlayerControls Instance;     // Reference to instance for network stuff
 
-    // Network Variables for Animation Parameters
+    // Network Variables for Animation syncing (local multiplayer)
     private NetworkVariable<float> horizontal = new NetworkVariable<float>(0);
     private NetworkVariable<float> vertical = new NetworkVariable<float>(0);
     private NetworkVariable<float> speed = new NetworkVariable<float>(0);
@@ -26,17 +27,19 @@ public class PlayerControls : NetworkBehaviour
     private NetworkVariable<float> lastVertical = new NetworkVariable<float>(0);
     private NetworkVariable<bool> isFacingLeft = new NetworkVariable<bool>(false);
 
+    /*   ==========================================
+         LIFECYCLE METHODS - Start() , Update() etc
+         ==========================================   */
 
-
-
-    // Start Function
     void Start()
     {
+        // Get reference to sprite renderer + set default idle pose
         spriteRenderer = GetComponent<SpriteRenderer>();
         lastMovement = Vector2.down;
         heartEmote.SetActive(false);
     }
 
+    // Awake function - For knockback
     private void Awake()
     {
         Instance = this;
@@ -47,17 +50,14 @@ public class PlayerControls : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        // Controls player movement
+        // Controls player movement + animations
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
-
-        // Controls walking animation
-        // Set animator parameters directly from local movement
         animator.SetFloat("Horizontal", movement.x);
         animator.SetFloat("Vertical", movement.y);
         animator.SetFloat("Speed", movement.sqrMagnitude);
 
-        // Tracks the last movement direction
+        // Tracks the last movement direction (for animations
         if (movement != Vector2.zero)
         {
             lastMovement = movement;
@@ -68,23 +68,22 @@ public class PlayerControls : NetworkBehaviour
         animator.SetFloat("LastVertical", lastMovement.y);
 
 
-        // Sync animator parameters with server
+        // Sync animator with server
         UpdateAnimatorParametersServerRpc(movement.x, movement.y, movement.sqrMagnitude, lastMovement.x, lastMovement.y);
 
         // Flipping animation based on last movement
-        if (movement.x < 0)
+        if (movement.x < 0) // Facing left
         {
-            spriteRenderer.flipX = true;  // Facing left
-            UpdateFacingDirectionServerRpc(true); // Update server that the player is facing left
+            spriteRenderer.flipX = true;  
+            UpdateFacingDirectionServerRpc(true); 
         }
-        else if (movement.x > 0)
+        else if (movement.x > 0) // Facing right
         {
-            spriteRenderer.flipX = false; // Facing right
-            UpdateFacingDirectionServerRpc(false); // Update server that the player is facing right
+            spriteRenderer.flipX = false; 
+            UpdateFacingDirectionServerRpc(false); 
         }
 
-
-        // Emote code
+        // Emote code - *For fun*
         if (movement == Vector2.zero && Input.GetKeyDown(KeyCode.B))
         {
             animator.SetTrigger("Heart");
@@ -93,7 +92,20 @@ public class PlayerControls : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
+    //Fixed update function - normalizes movement speed
+    void FixedUpdate()
+    {
+        if (!IsOwner) return;
+
+        rb.velocity = movement.normalized * moveSpeed;
+    }
+
+
+    /*   ===============================================
+         NETCODE METHODS - For animation/action syncing
+         ===============================================   */
+
+    [ServerRpc] // Update player animator
     void UpdateAnimatorParametersServerRpc(float newHorizontal, float newVertical, float newSpeed, float newLastHorizontal, float newLastVertical)
     {
         horizontal.Value = newHorizontal;
@@ -102,18 +114,18 @@ public class PlayerControls : NetworkBehaviour
         lastHorizontal.Value = newLastHorizontal;
         lastVertical.Value = newLastVertical;
 
-        UpdateAnimatorParametersClientRpc(horizontal.Value, vertical.Value, speed.Value, lastHorizontal.Value, lastVertical.Value);
+        UpdateAnimatorParametersClientRpc(horizontal.Value, vertical.Value, speed.Value, lastHorizontal.Value, lastVertical.Value); // Informs clients (below)
     }
 
-    [ServerRpc]
+    [ServerRpc] // Update player facing direction (sprite flipper)
     void UpdateFacingDirectionServerRpc(bool facingLeft)
     {
-        isFacingLeft.Value = facingLeft; // Update facing direction on the server
-        UpdateFacingDirectionClientRpc(isFacingLeft.Value); // Inform all clients
+        isFacingLeft.Value = facingLeft; 
+        UpdateFacingDirectionClientRpc(isFacingLeft.Value); // Informs clients (below)
     }
 
 
-    [ClientRpc]
+    [ClientRpc] // Update own direction
     void UpdateAnimatorParametersClientRpc(float horizontal, float vertical, float speed, float lastHorizontal, float lastVertical)
     {
         animator.SetFloat("Horizontal", horizontal);
@@ -123,21 +135,16 @@ public class PlayerControls : NetworkBehaviour
         animator.SetFloat("LastVertical", lastVertical);
     }
 
-    [ClientRpc]
+    [ClientRpc] // Update own facing direction
     void UpdateFacingDirectionClientRpc(bool facingLeft)
     {
-        spriteRenderer.flipX = facingLeft; // Set the sprite flip state based on the server's value
+        spriteRenderer.flipX = facingLeft; 
     }
 
-
-    void FixedUpdate()
-    {
-        if (!IsOwner) return;
-
-        rb.velocity = movement.normalized * moveSpeed;
-    }
-
-    void hideHeartEmote()
+    /*   ======================================
+         ADDITIONAL STUFF - Other functions etc
+         ======================================   */
+    void hideHeartEmote() //For funsies (only displays locally atm)
     {
         heartEmote.SetActive(false);
     }
