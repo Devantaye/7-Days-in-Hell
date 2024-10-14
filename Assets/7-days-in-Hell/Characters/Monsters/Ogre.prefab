@@ -158,7 +158,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fullHealth: 6
-  LootPrefab: {fileID: 0}
+  LootPrefab: {fileID: 8907365755836310913, guid: c9f6987bf154340c3a589050ba534553,
+    type: 3}
 --- !u!114 &1384405056214282105
 MonoBehaviour:
   m_ObjectHideFlags: 0
