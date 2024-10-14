@@ -19,6 +19,8 @@ public class PlayerControls : NetworkBehaviour
     private Knockback knockback;               // For monster knockback
     public static PlayerControls Instance;     // Reference to instance for network stuff
 
+    public CoinManager Cm; // Reference to the CoinManager 
+
     // Network Variables for Animation syncing (local multiplayer)
     private NetworkVariable<float> horizontal = new NetworkVariable<float>(0);
     private NetworkVariable<float> vertical = new NetworkVariable<float>(0);
@@ -147,5 +149,16 @@ public class PlayerControls : NetworkBehaviour
     void hideHeartEmote() //For funsies (only displays locally atm)
     {
         heartEmote.SetActive(false);
+    }
+
+    // Increase coin count when player walks over coin
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("Coin"))
+        {
+            Destroy(other.gameObject);
+            Cm.coinCount++;
+        }
+
     }
 }

@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: -2253911629886400664, guid: 7068377110ba44299bb3cedfe1d3e044,
         type: 3}
       propertyPath: m_Name
-      value: OchreJelly
+      value: Slime
       objectReference: {fileID: 0}
     - target: {fileID: 3626916397498700004, guid: 7068377110ba44299bb3cedfe1d3e044,
         type: 3}
@@ -80,18 +80,22 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 7068377110ba44299bb3cedfe1d3e044,
         type: 3}
       insertIndex: 2
-      addedObject: {fileID: 1417116701857702295}
+      addedObject: {fileID: -8208448719014217034}
     - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 7068377110ba44299bb3cedfe1d3e044,
         type: 3}
       insertIndex: 3
-      addedObject: {fileID: 7206470578696146335}
+      addedObject: {fileID: 1417116701857702295}
     - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 7068377110ba44299bb3cedfe1d3e044,
         type: 3}
       insertIndex: 4
-      addedObject: {fileID: 644045281124179861}
+      addedObject: {fileID: 7206470578696146335}
     - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 7068377110ba44299bb3cedfe1d3e044,
         type: 3}
       insertIndex: 5
+      addedObject: {fileID: 644045281124179861}
+    - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 7068377110ba44299bb3cedfe1d3e044,
+        type: 3}
+      insertIndex: 6
       addedObject: {fileID: 2947780441330007558}
     - targetCorrespondingSourceObject: {fileID: -2253911629886400664, guid: 7068377110ba44299bb3cedfe1d3e044,
         type: 3}
@@ -109,6 +113,20 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 245188219008524717}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &-8208448719014217034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7196587495233091269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1b03df4fc44c4dc1ade9af77915fad6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  whiteFlashMaterial: {fileID: 2100000, guid: 6672802b713b24e96afc4a020b695a9f, type: 2}
+  restoreDefaultMatTime: 0.2
 --- !u!114 &1417116701857702295
 MonoBehaviour:
   m_ObjectHideFlags: 0
