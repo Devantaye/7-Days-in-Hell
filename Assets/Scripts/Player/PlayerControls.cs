@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using Cinemachine;
 
 public class PlayerControls : NetworkBehaviour
 {
+    [SerializeField] private CinemachineVirtualCamera vc;
+    [SerializeField] private AudioListener listener;
     // Default variables
     public Rigidbody2D rb;                     // Rigid body
     public Animator animator;                  // Reference to animator
@@ -42,6 +45,15 @@ public class PlayerControls : NetworkBehaviour
     }
 
     // Awake function - For knockback
+    public override void OnNetworkSpawn()
+    {
+        if (IsOwner) {
+            listener.enabled = true;
+            vc.Priority = 1;
+        }else {
+            vc.Priority = 0;
+        }
+    }
     private void Awake()
     {
         Instance = this;
