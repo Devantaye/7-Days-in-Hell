@@ -11,6 +11,7 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
     public GameObject playerModel;                    // Reference to the player model
     public Animator animator;                         // Reference to the animator
     public Transform spawnPoint;                      // Respawn point for the player
+    public PlayerControls playerControls;             // Reference to player controls
 
     // Player health stuff
     public static int maxHealth = 3;                  // Max health points
@@ -37,6 +38,7 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
         // Gets references to components
         flash = GetComponent<Flash>();
         knockback = GetComponent<Knockback>();
+        playerControls = GetComponent<PlayerControls>();
     }
 
     void Start()
@@ -83,9 +85,9 @@ public class PlayerHealth : NetworkBehaviour // Inherit from NetworkBehaviour
     // Damage dealer - Player takes damage + checks death status
     public void TakeDamage(int damageAmount)
     {
-        if (isInvincible || takeDamageIndicator == false)
+        if (isInvincible || takeDamageIndicator == false || playerControls.isInvis == true)
         {
-            return; //  Player cant take damage due to respawning or damage invincibility
+            return; //  Player cant take damage due to respawning,  damage invincibility or invis
         }
 
         // Reduce health and update variables

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -21,8 +22,18 @@ public class PlayerControls : NetworkBehaviour
     public float emoteDuration = 1.5f;         // Controls emote length
     private Knockback knockback;               // For monster knockback
     public static PlayerControls Instance;     // Reference to instance for network stuff
-
     public CoinManager Cm; // Reference to the CoinManager 
+
+    // Player abilities
+    // [1] Dash
+    private float dashSpeed = 13f;       // Dash speed
+    private float dashDuration = 0.1f;   // Dash duration
+    private float dashCooldown = 10f;     // Dash cooldown
+    private bool isDashing = false;     // Variable to control dash toggle
+    private float dashTime;             // controls dashcooldown
+    private float lastDashTime;     // Also controls dashcooldown
+    // [2] Invis
+    public bool isInvis = false;   
 
     // Network Variables for Animation syncing (local multiplayer)
     private NetworkVariable<float> horizontal = new NetworkVariable<float>(0);
@@ -42,6 +53,9 @@ public class PlayerControls : NetworkBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         lastMovement = Vector2.down;
         heartEmote.SetActive(false);
+        lastDashTime = -dashCooldown;
+
+   
     }
 
     // Awake function - For knockback
@@ -58,6 +72,7 @@ public class PlayerControls : NetworkBehaviour
     {
         Instance = this;
         knockback = GetComponent<Knockback>();
+
     }
 
     void Update()
@@ -81,20 +96,43 @@ public class PlayerControls : NetworkBehaviour
         animator.SetFloat("LastHorizontal", lastMovement.x);
         animator.SetFloat("LastVertical", lastMovement.y);
 
+        // Update the player's position based on the movement
+        Vector3 moveVector = new Vector2(movement.x, movement.y) * moveSpeed * Time.deltaTime;
+        transform.position += moveVector; // Move the player
 
         // Sync animator with server
         UpdateAnimatorParametersServerRpc(movement.x, movement.y, movement.sqrMagnitude, lastMovement.x, lastMovement.y);
 
-        // Flipping animation based on last movement
-        if (movement.x < 0) // Facing left
+        // only flips if player isnt dashing
+        if (!isDashing)
         {
-            spriteRenderer.flipX = true;  
-            UpdateFacingDirectionServerRpc(true); 
+            // Flipping animation based on last movement
+            if (movement.x < 0) // Facing left
+            {
+                spriteRenderer.flipX = true;
+                UpdateFacingDirectionServerRpc(true);
+            }
+            else if (movement.x > 0) // Facing right
+            {
+                spriteRenderer.flipX = false;
+                UpdateFacingDirectionServerRpc(false);
+            }
         }
-        else if (movement.x > 0) // Facing right
+
+        // Dash ability code
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing && Time.time - lastDashTime > dashCooldown)
         {
-            spriteRenderer.flipX = false; 
-            UpdateFacingDirectionServerRpc(false); 
+            StartDash();
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing)
+        {
+            Debug.Log("dash cooldown: " + (dashCooldown));
+            Debug.Log("Time since last dash: " + (lastDashTime));
+        }
+
+        if (isDashing)
+        {
+            ContinueDash();
         }
 
         // Emote code - *For fun*
@@ -104,14 +142,48 @@ public class PlayerControls : NetworkBehaviour
             heartEmote.SetActive(true);
             Invoke("hideHeartEmote", emoteDuration);
         }
+
     }
+
+    private void StartDash()
+    {
+        isDashing = true;
+        dashTime = Time.time + dashDuration;
+        lastDashTime = Time.time;
+
+        Debug.Log("Time since last dash: " + (Time.time - lastDashTime));
+        Debug.Log("Current dash speed: " + dashSpeed);
+   
+
+
+        // Sync dash start with the server
+        StartDashServerRpc();
+    }
+
+    private void ContinueDash()
+    {
+        if (Time.time < dashTime)
+        {
+            transform.position += (Vector3)lastMovement.normalized * dashSpeed * Time.deltaTime;
+        }
+        else
+        {
+            isDashing = false;
+        }
+    }
+
+    
 
     //Fixed update function - normalizes movement speed
     void FixedUpdate()
     {
         if (!IsOwner) return;
-
-        rb.velocity = movement.normalized * moveSpeed;
+        if (!isDashing)
+        {
+            // Only runs when player isnt dashing
+            rb.velocity = movement.normalized * moveSpeed;
+        }
+        
     }
 
 
@@ -136,6 +208,14 @@ public class PlayerControls : NetworkBehaviour
     {
         isFacingLeft.Value = facingLeft; 
         UpdateFacingDirectionClientRpc(isFacingLeft.Value); // Informs clients (below)
+    }
+
+    [ServerRpc] // Sync dash ability
+    private void StartDashServerRpc()
+    {
+        isDashing = true;
+        dashTime = Time.time + dashDuration;
+        lastDashTime = Time.time;
     }
 
 
