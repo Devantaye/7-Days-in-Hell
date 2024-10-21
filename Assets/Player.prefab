@@ -521,6 +521,7 @@ MonoBehaviour:
   lastMovement: {x: 0, y: 0}
   emoteDuration: 1.5
   Cm: {fileID: 2789887726866805230, guid: 5480132e89f8347d2adad73c8b50a9c8, type: 3}
+  isInvis: 0
 --- !u!50 &3898639112339492769
 Rigidbody2D:
   serializedVersion: 4
@@ -588,6 +589,9 @@ MonoBehaviour:
   enemyPlayerLayers:
     serializedVersion: 2
     m_Bits: 128
+  coreLayers:
+    serializedVersion: 2
+    m_Bits: 256
   playerAttackCooldown: 0.6
   attackDamage: 1
   attackRange: 0.3
@@ -703,6 +707,7 @@ MonoBehaviour:
   animator: {fileID: 8013431455999220989}
   spawnPoint: {fileID: 6605772827775627540, guid: fe3d517b4d64c3f469f9033305b3e545,
     type: 3}
+  playerControls: {fileID: 0}
   invincibilityTimer: 2
 --- !u!1 &4765735302333338441
 GameObject:
