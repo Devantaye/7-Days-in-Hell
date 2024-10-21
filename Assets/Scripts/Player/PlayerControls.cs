@@ -28,12 +28,16 @@ public class PlayerControls : NetworkBehaviour
     // [1] Dash
     private float dashSpeed = 13f;       // Dash speed
     private float dashDuration = 0.1f;   // Dash duration
-    private float dashCooldown = 10f;     // Dash cooldown
+    private float dashCooldown = 15f;     // Dash cooldown
     private bool isDashing = false;     // Variable to control dash toggle
     private float dashTime;             // controls dashcooldown
     private float lastDashTime;     // Also controls dashcooldown
     // [2] Invis
-    public bool isInvis = false;   
+    public bool isInvis = false;
+    private float invisDuration = 4f;   // Dash duration
+    private float invisCooldown = 15f;     // Dash cooldown
+    private float invisTime;             // controls dashcooldown
+    private float lastInvisTime;     // Also controls dashcooldown
 
     // Network Variables for Animation syncing (local multiplayer)
     private NetworkVariable<float> horizontal = new NetworkVariable<float>(0);
@@ -54,6 +58,7 @@ public class PlayerControls : NetworkBehaviour
         lastMovement = Vector2.down;
         heartEmote.SetActive(false);
         lastDashTime = -dashCooldown;
+        lastInvisTime = -invisCooldown;
 
    
     }
@@ -124,15 +129,16 @@ public class PlayerControls : NetworkBehaviour
         {
             StartDash();
         }
-        else if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing)
-        {
-            Debug.Log("dash cooldown: " + (dashCooldown));
-            Debug.Log("Time since last dash: " + (lastDashTime));
-        }
 
         if (isDashing)
         {
             ContinueDash();
+        }
+
+        // Invis ability code
+        if (Input.GetKeyDown(KeyCode.E) && !isInvis && Time.time - lastInvisTime > invisCooldown)
+        {
+            StartInvis();
         }
 
         // Emote code - *For fun*
@@ -172,7 +178,70 @@ public class PlayerControls : NetworkBehaviour
         }
     }
 
-    
+    private void StartInvis()
+    {
+        if (isInvis) return;
+
+        isInvis = true;
+        lastInvisTime = Time.time;
+
+        // Start fading out
+        StartCoroutine(FadeOut());
+
+        StartInvisServerRpc();
+    }
+
+    private IEnumerator FadeOut()
+    {
+        float fadeDuration = 1f; // The time it takes to fade
+        float startAlpha = 1f;   // Start fully visible
+        float endAlpha = IsOwner ? 0.5f : 0f; // Player sees themselves at 50%, others see fully invisible
+        Color spriteColor = spriteRenderer.color;
+
+        // Gradually change alpha over time
+        for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+        {
+            float normalizedTime = t / fadeDuration;
+            spriteColor.a = Mathf.Lerp(startAlpha, endAlpha, normalizedTime);
+            spriteRenderer.color = spriteColor;
+            yield return null;
+        }
+
+        // Ensure it ends at the target alpha
+        spriteColor.a = endAlpha;
+        spriteRenderer.color = spriteColor;
+
+        // Keep player invisible for the duration
+        yield return new WaitForSeconds(invisDuration);
+
+        // Fade back in after invisibility duration
+        StartCoroutine(FadeIn());
+    }
+
+    private IEnumerator FadeIn()
+    {
+        isInvis = false; // End invisibility
+
+        float fadeDuration = 1f; // Time to fade back in
+        float startAlpha = IsOwner ? 0.5f : 0f; // Start at 50% for player, 0% for enemies
+        float endAlpha = 1f; // Fully visible
+        Color spriteColor = spriteRenderer.color;
+
+        // Gradually change alpha back to fully visible
+        for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+        {
+            float normalizedTime = t / fadeDuration;
+            spriteColor.a = Mathf.Lerp(startAlpha, endAlpha, normalizedTime);
+            spriteRenderer.color = spriteColor;
+            yield return null;
+        }
+
+        // Ensure it's fully visible at the end
+        spriteColor.a = endAlpha;
+        spriteRenderer.color = spriteColor;
+    }
+
+
 
     //Fixed update function - normalizes movement speed
     void FixedUpdate()
@@ -217,6 +286,24 @@ public class PlayerControls : NetworkBehaviour
         dashTime = Time.time + dashDuration;
         lastDashTime = Time.time;
     }
+
+    [ServerRpc]
+    private void StartInvisServerRpc()
+    {
+        // Sync invisibility to all clients
+        UpdateInvisibilityClientRpc();
+    }
+
+    [ClientRpc]
+    private void UpdateInvisibilityClientRpc()
+    {
+        // Start the fade-out coroutine to make the player invisible
+        if (!IsOwner) // Only run the fade-out for other players' view
+        {
+            StartCoroutine(FadeOut());
+        }
+    }
+
 
 
     [ClientRpc] // Update own direction
