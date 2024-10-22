@@ -520,7 +520,7 @@ MonoBehaviour:
   moveSpeed: 0.8
   lastMovement: {x: 0, y: 0}
   emoteDuration: 1.5
-  Cm: {fileID: 2789887726866805230, guid: 5480132e89f8347d2adad73c8b50a9c8, type: 3}
+  Cm: {fileID: 6742230610475950941, guid: 2c4b33249391d42b2a15f562795f1372, type: 3}
   isInvis: 0
 --- !u!50 &3898639112339492769
 Rigidbody2D:
