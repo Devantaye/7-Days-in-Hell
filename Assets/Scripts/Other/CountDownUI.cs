@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using UnityEditor.Search;
 using UnityEngine;
 
 public class CountDownUI : MonoBehaviour
@@ -9,10 +8,14 @@ public class CountDownUI : MonoBehaviour
 [SerializeField] private TextMeshProUGUI countdownText;
 
 private void Start() {
-    HellGameManager.Instance.OnStateChanged += HellGameManager_OnStateChanged;
-
-    Hide();
+    if (HellGameManager.Instance != null) {
+        HellGameManager.Instance.OnStateChanged += HellGameManager_OnStateChanged;
+        Hide();
+    } else {
+        Debug.LogError("HellGameManager instance is null in CountDownUI");
+    }
 }
+
 
 private void HellGameManager_OnStateChanged(object sender, System.EventArgs e) {
     if (HellGameManager.Instance.IsCountdownToStartActive()) {
@@ -23,7 +26,11 @@ private void HellGameManager_OnStateChanged(object sender, System.EventArgs e) {
 }
 
 private void Update() {
-    countdownText.text = HellGameManager.Instance.GetCountdownToStartTimer().ToString();
+    if (HellGameManager.Instance != null && countdownText != null && HellGameManager.Instance.IsCountdownToStartActive()) 
+    {
+
+        countdownText.text = Mathf.Ceil(HellGameManager.Instance.GetCountdownToStartTimer()).ToString();
+    }
 }
    private void Show() {
         gameObject.SetActive(true);

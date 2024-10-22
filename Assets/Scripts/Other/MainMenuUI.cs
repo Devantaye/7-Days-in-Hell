@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-public class NetworkManagerUI : MonoBehaviour
+public class MainMenuUI : MonoBehaviour
 {
     [SerializeField] private Button hostBtn;
     [SerializeField] private Button clientBtn;
@@ -12,23 +12,17 @@ public class NetworkManagerUI : MonoBehaviour
 
     private void Awake() {
         hostBtn.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartHost();
-            LoadGameScene();
+            HellGameMultiplayer.Instance.StartHost();
+            Loader.LoadNetwork(Loader.Scene.GameScene);
         });
 
         clientBtn.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartClient();
+            HellGameMultiplayer.Instance.StartClient();
         });
 
         quitBtn.onClick.AddListener(() => {
             Application.Quit();
         });
-    }
-
-    private void LoadGameScene() {
-        if (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost) {
-            NetworkManager.Singleton.SceneManager.LoadScene("Game Scene", LoadSceneMode.Single);
-        }
     }
 }
 
