@@ -9,6 +9,7 @@ public class PlayerCombat : NetworkBehaviour
     public Animator animator;                 // Reference to animator for attack animations
     public LayerMask enemyLayers;             // Layer of enemies (for attack detection)
     public LayerMask enemyPlayerLayers;       // Layer of enemy players (for attack detection)
+    public LayerMask coreLayers;              // Layer to detect core
     private PlayerControls playerMovement;    // Reference to player_movement script
 
     // Variables for attack stuff
@@ -88,6 +89,25 @@ public class PlayerCombat : NetworkBehaviour
                 if (monsterHealth != null)
                 {
                     monsterHealth.TakeDamage(attackDamage);
+                }
+            }
+        }
+
+        // Detect core
+        Collider2D[] cores = Physics2D.OverlapCircleAll((Vector2)transform.position, attackRange, coreLayers);
+
+        foreach (Collider2D core in cores)
+        {
+            Vector2 toEnemyCore = (Vector2)core.transform.position - (Vector2)transform.position;
+
+            // Check if enemy is in the attack range (1 of 4 directions -> cone-shaped)
+            if (IsWithinCone(attackDirection, toEnemyCore))
+            {
+                // Deal damage
+                CoreHealth coreHealth = core.GetComponent<CoreHealth>();
+                if (coreHealth != null)
+                {
+                    coreHealth.TakeDamage(attackDamage);
                 }
             }
         }

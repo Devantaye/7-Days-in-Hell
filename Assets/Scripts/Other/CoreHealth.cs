@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class CoreHealth : NetworkBehaviour // Inherit from NetworkBehaviour
+public class CoreHealthNotreal : NetworkBehaviour // Inherit from NetworkBehaviour
 {
     // Default Variables
     public GameObject[] hearts;                       // Array of heart GameObjects
