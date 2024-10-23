@@ -222,7 +222,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 361358564}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &361358566
 Camera:
   m_ObjectHideFlags: 0
@@ -941,6 +941,11 @@ MonoBehaviour:
       type: 3}
     Prefabs:
       NetworkPrefabsLists:
+      - {fileID: 11400000, guid: 9772493dee2b1d140a6acf2d8eeffa06, type: 2}
+      - {fileID: 11400000, guid: 9772493dee2b1d140a6acf2d8eeffa06, type: 2}
+      - {fileID: 11400000, guid: 9772493dee2b1d140a6acf2d8eeffa06, type: 2}
+      - {fileID: 11400000, guid: 9772493dee2b1d140a6acf2d8eeffa06, type: 2}
+      - {fileID: 11400000, guid: 9772493dee2b1d140a6acf2d8eeffa06, type: 2}
       - {fileID: 11400000, guid: 9772493dee2b1d140a6acf2d8eeffa06, type: 2}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
